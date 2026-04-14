@@ -52,15 +52,21 @@
             </div>
         </aside>
 
-        <main class="flex-1 bg-nbSurface/30 p-6 flex flex-col overflow-y-auto">
+       <main class="flex-1 bg-nbSurface/30 p-6 flex flex-col overflow-y-auto">
+            
             <div class="flex justify-between items-center mb-6">
                 <div class="text-xl font-medium">Arquivos do Projeto</div>
+                
+                <button onclick="agruparPorTipo()" class="text-sm bg-nbSurface border border-nbBorder hover:bg-nbSurfaceHover px-4 py-2 rounded-md flex items-center gap-2 transition cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                    Agrupar por Tipo
+                </button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="fileGrid">
 
                 {% for arquivo in arquivos %}
-                <div class="bg-nbSurface border border-nbBorder rounded-xl p-4 hover:border-nbAccent transition group">
+                <div class="file-item bg-nbSurface border border-nbBorder rounded-xl p-4 hover:border-nbAccent transition group" data-tipo="{{ arquivo.tipo }}">
                     <div class="flex justify-between items-start mb-3">
                         <div class="p-2 bg-blue-500/20 text-blue-400 rounded-lg font-bold text-xs uppercase">
                             {{ arquivo.tipo|default:"DOC" }}
@@ -82,5 +88,30 @@
             </div>
         </main>
     </div>
+    <script>
+    function agruparPorTipo() {
+        // Pega a "caixa" onde estão todos os arquivos
+        const grid = document.getElementById('fileGrid');
+        
+        // Pega todos os arquivos individuais que preparamos com a classe 'file-item'
+        const cards = Array.from(grid.getElementsByClassName('file-item'));
+
+        // Ordena a lista de cards baseada no 'data-tipo'
+        cards.sort((a, b) => {
+            let tipoA = (a.getAttribute('data-tipo') || '').toLowerCase();
+            let tipoB = (b.getAttribute('data-tipo') || '').toLowerCase();
+            
+            // Coloca em ordem alfabética (.docx, .pdf, .txt, etc)
+            if (tipoA < tipoB) return -1;
+            if (tipoA > tipoB) return 1;
+            return 0;
+        });
+
+        // Devolve os cards ordenados para a tela
+        cards.forEach(card => {
+            grid.appendChild(card);
+        });
+    }
+</script>
 </body>
 </html>
