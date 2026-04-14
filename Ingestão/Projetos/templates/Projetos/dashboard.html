@@ -52,15 +52,31 @@
             </div>
         </aside>
 
-        <main class="flex-1 bg-nbSurface/30 p-6 flex flex-col overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
+       <main class="flex-1 bg-nbSurface/30 p-6 flex flex-col overflow-y-auto">
+            
+           <div class="flex justify-between items-center mb-6">
                 <div class="text-xl font-medium">Arquivos do Projeto</div>
+                
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-nbMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                    
+                    <select id="filtroSelect" onchange="ordenarArquivos()" class="text-sm bg-nbSurface border border-nbBorder hover:bg-nbSurfaceHover text-nbText px-3 py-2 rounded-md transition cursor-pointer outline-none focus:border-nbAccent">
+                        <option value="" disabled selected>Classificar por...</option>
+                        <option value="tipo">Tipo de Arquivo</option>
+                        <option value="nome">Ordem Alfabética</option>
+                        <option value="data">Mais Recentes</option>
+                    </select>
+                    
+                    <button onclick="alternarOrdem()" class="p-2 bg-nbSurface border border-nbBorder hover:bg-nbSurfaceHover rounded-md transition text-nbMuted hover:text-nbText" title="Inverter Ordem">
+                        <svg id="iconeOrdem" class="w-4 h-4 transition-transform duration-300 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    </button>
+                </div>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<comentario para commit pq sou burro></comentario>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="fileGrid">
 
                 {% for arquivo in arquivos %}
-                <div class="bg-nbSurface border border-nbBorder rounded-xl p-4 hover:border-nbAccent transition group">
+               <div class="file-item bg-nbSurface border border-nbBorder rounded-xl p-4 hover:border-nbAccent transition group" data-tipo="{{ arquivo.tipo }}" data-nome="{{ arquivo.nome_original|lower }}" data-data="{{ arquivo.data_ingestao|date:'U' }}">
                     <div class="flex justify-between items-start mb-3">
                         <div class="p-2 bg-blue-500/20 text-blue-400 rounded-lg font-bold text-xs uppercase">
                             {{ arquivo.tipo|default:"DOC" }}
@@ -82,5 +98,66 @@
             </div>
         </main>
     </div>
+    <script>
+    // Memória do sistema: Guarda se a ordem está no padrão ou invertida
+    let ordemPadrao = true; 
+
+    function alternarOrdem() {
+        ordemPadrao = !ordemPadrao; // Inverte o estado (verdadeiro vira falso, e vice-versa)
+        
+        // Pega o ícone da seta e gira ele visualmente (Animação do Tailwind)
+        const icone = document.getElementById('iconeOrdem');
+        if (ordemPadrao) {
+            icone.classList.remove('rotate-180');
+        } else {
+            icone.classList.add('rotate-180');
+        }
+        
+        // Reaplica o filtro com a nova ordem imediatamente
+        ordenarArquivos();
+    }
+
+    function ordenarArquivos() {
+        // Agora a função descobre sozinha qual opção está selecionada no menu
+        const select = document.getElementById('filtroSelect');
+        const criterio = select.value;
+        
+        if (!criterio) return; // Se estiver no "Classificar por...", não faz nada
+
+        const grid = document.getElementById('fileGrid');
+        const cards = Array.from(grid.getElementsByClassName('file-item'));
+
+        cards.sort((a, b) => {
+            let resultado = 0;
+
+            if (criterio === 'tipo') {
+                let valA = (a.getAttribute('data-tipo') || '').toLowerCase();
+                let valB = (b.getAttribute('data-tipo') || '').toLowerCase();
+                if (valA < valB) resultado = -1;
+                if (valA > valB) resultado = 1;
+            } 
+            else if (criterio === 'nome') {
+                let valA = (a.getAttribute('data-nome') || '');
+                let valB = (b.getAttribute('data-nome') || '');
+                if (valA < valB) resultado = -1;
+                if (valA > valB) resultado = 1;
+            } 
+            else if (criterio === 'data') {
+                let valA = parseInt(a.getAttribute('data-data') || '0');
+                let valB = parseInt(b.getAttribute('data-data') || '0');
+                resultado = valB - valA; 
+            }
+
+            // O Pulo do Gato: se a 'ordemPadrao' for falsa (invertida), 
+            // multiplicamos por -1 para inverter o resultado matemático de trás pra frente!
+            return ordemPadrao ? resultado : (resultado * -1);
+        });
+
+        // Devolve os cards ordenados para a tela
+        cards.forEach(card => {
+            grid.appendChild(card);
+        });
+    }
+</script>
 </body>
 </html>
