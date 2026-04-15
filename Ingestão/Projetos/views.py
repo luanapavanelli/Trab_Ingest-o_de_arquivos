@@ -4,8 +4,23 @@ from .models import Projeto, Arquivo
 
 def home(request):
     """
-    Tela Inicial: Lista todos os projetos para o menu principal.
+    Tela Inicial: Lista projetos e permite a criação de um novo.
     """
+    # Lógica de Criação: Se o usuário enviou o formulário de novo projeto
+    if request.method == 'POST':
+        nome_projeto = request.POST.get('nome')
+        descricao_projeto = request.POST.get('descricao')
+        
+        # Só cria se tiver pelo menos o nome preenchido
+        if nome_projeto:
+            novo_projeto = Projeto.objects.create(
+                nome=nome_projeto,
+                descricao=descricao_projeto
+            )
+            # Redireciona instantaneamente para o dashboard do projeto recém-criado
+            return redirect('dashboard', projeto_id=novo_projeto.id)
+
+    # Busca padrão para renderizar a tela (mais recentes primeiro)
     projetos = Projeto.objects.all().order_by('-ultima_alteracao')
     return render(request, 'Projetos/home.html', {'projetos': projetos})
 
