@@ -37,7 +37,6 @@
     <div class="flex flex-1 overflow-hidden">
 
         <aside class="w-72 border-r border-nbBorder bg-nbBg flex flex-col p-4">
-
             <form method="POST" enctype="multipart/form-data" id="uploadForm" class="flex flex-col gap-2 mb-6">
                 {% csrf_token %}
                 <button type="button" class="w-full bg-nbAccent hover:bg-nbAccentHover text-nbBg font-semibold py-2.5 px-4 rounded-full flex items-center justify-center gap-2 transition shadow-lg" onclick="document.getElementById('fileInput').click()">
@@ -72,17 +71,26 @@
                     </button>
                 </div>
             </div>
-<comentario para commit pq sou burro></comentario>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="fileGrid">
 
                 {% for arquivo in arquivos %}
-               <div class="file-item bg-nbSurface border border-nbBorder rounded-xl p-4 hover:border-nbAccent transition group" data-tipo="{{ arquivo.tipo }}" data-nome="{{ arquivo.nome_original|lower }}" data-data="{{ arquivo.data_ingestao|date:'U' }}">
+                <div class="file-item bg-nbSurface border border-nbBorder rounded-xl p-4 hover:border-nbAccent transition group" data-tipo="{{ arquivo.tipo }}" data-nome="{{ arquivo.nome_original|lower }}" data-data="{{ arquivo.data_ingestao|date:'U' }}">
+                    
                     <div class="flex justify-between items-start mb-3">
                         <div class="p-2 bg-blue-500/20 text-blue-400 rounded-lg font-bold text-xs uppercase">
                             {{ arquivo.tipo|default:"DOC" }}
                         </div>
+                        
+                        <a href="{{ arquivo.documento.url }}" download class="text-nbMuted hover:text-nbAccent transition p-1" title="Baixar Arquivo">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </a>
                     </div>
-                    <h4 class="font-medium text-sm truncate mb-1" title="{{ arquivo.nome_original }}">{{ arquivo.nome_original }}</h4>
+                    
+                    <a href="{{ arquivo.documento.url }}" target="_blank" class="font-medium text-sm truncate mb-1 hover:text-nbAccent hover:underline block" title="Abrir {{ arquivo.nome_original }}">
+                        {{ arquivo.nome_original }}
+                    </a>
+                    
                     <div class="text-xs text-nbMuted flex justify-between mt-4">
                         <span>Ingerido em:</span>
                         <span>{{ arquivo.data_ingestao|date:"d/m/y H:i" }}</span>
@@ -99,37 +107,29 @@
         </main>
     </div>
     <script>
-    // Memória do sistema: Guarda se a ordem está no padrão ou invertida
     let ordemPadrao = true; 
 
     function alternarOrdem() {
-        ordemPadrao = !ordemPadrao; // Inverte o estado (verdadeiro vira falso, e vice-versa)
-        
-        // Pega o ícone da seta e gira ele visualmente (Animação do Tailwind)
+        ordemPadrao = !ordemPadrao;
         const icone = document.getElementById('iconeOrdem');
         if (ordemPadrao) {
             icone.classList.remove('rotate-180');
         } else {
             icone.classList.add('rotate-180');
         }
-        
-        // Reaplica o filtro com a nova ordem imediatamente
         ordenarArquivos();
     }
 
     function ordenarArquivos() {
-        // Agora a função descobre sozinha qual opção está selecionada no menu
         const select = document.getElementById('filtroSelect');
         const criterio = select.value;
-        
-        if (!criterio) return; // Se estiver no "Classificar por...", não faz nada
+        if (!criterio) return;
 
         const grid = document.getElementById('fileGrid');
         const cards = Array.from(grid.getElementsByClassName('file-item'));
 
         cards.sort((a, b) => {
             let resultado = 0;
-
             if (criterio === 'tipo') {
                 let valA = (a.getAttribute('data-tipo') || '').toLowerCase();
                 let valB = (b.getAttribute('data-tipo') || '').toLowerCase();
@@ -147,16 +147,10 @@
                 let valB = parseInt(b.getAttribute('data-data') || '0');
                 resultado = valB - valA; 
             }
-
-            // O Pulo do Gato: se a 'ordemPadrao' for falsa (invertida), 
-            // multiplicamos por -1 para inverter o resultado matemático de trás pra frente!
             return ordemPadrao ? resultado : (resultado * -1);
         });
 
-        // Devolve os cards ordenados para a tela
-        cards.forEach(card => {
-            grid.appendChild(card);
-        });
+        cards.forEach(card => grid.appendChild(card));
     }
 </script>
 </body>
