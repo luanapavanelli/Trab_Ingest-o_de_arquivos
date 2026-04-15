@@ -6,8 +6,8 @@ from Projetos import views  # Isso conecta o seu app de projetos!
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Esta é a linha que estava faltando. Ela diz que a URL raiz ('') vai carregar o seu HTML:
-    path('', views.dashboard, name='dashboard'), 
+    path('', views.home, name='home'),  # Tela de menu principal
+    path('projeto/<int:projeto_id>/', views.dashboard, name='dashboard'), # Tela de arquivos
 ]
 
 # Isso permite que os PDFs e arquivos abram no navegador depois do upload

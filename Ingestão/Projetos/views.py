@@ -1,24 +1,46 @@
 import os
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Projeto, Arquivo
 
+def home(request):
+    """
+    Tela Inicial: Lista projetos e permite a criação de um novo.
+    """
+    # Lógica de Criação: Se o usuário enviou o formulário de novo projeto
+    if request.method == 'POST':
+        nome_projeto = request.POST.get('nome')
+        descricao_projeto = request.POST.get('descricao')
+        
+        # Só cria se tiver pelo menos o nome preenchido
+        if nome_projeto:
+            novo_projeto = Projeto.objects.create(
+                nome=nome_projeto,
+                descricao=descricao_projeto
+            )
+            # Redireciona instantaneamente para o dashboard do projeto recém-criado
+            return redirect('dashboard', projeto_id=novo_projeto.id)
 
-def dashboard(request):
-    # Garante que sempre exista pelo menos um projeto para o MVP não quebrar
-    projeto = Projeto.objects.first()
-    if not projeto:
-        projeto = Projeto.objects.create(nome="MVP - Gestão Inicial", descricao="Projeto de teste gerado pelo sistema.")
+    # Busca padrão para renderizar a tela (mais recentes primeiro)
+    projetos = Projeto.objects.all().order_by('-ultima_alteracao')
+    return render(request, 'Projetos/home.html', {'projetos': projetos})
 
-    # Lógica de Ingestão: Captura o arquivo enviado pelo HTML
+def dashboard(request, projeto_id):
+    """
+    Tela do Projeto: Exibe arquivos e lida com uploads de um projeto específico.
+    """
+    # Busca o projeto exato pelo ID que vem da URL
+    projeto = get_object_or_404(Projeto, id=projeto_id)
+
+    # Lógica de Ingestão: Captura o arquivo enviado pelo formulário
     if request.method == 'POST':
         if 'arquivo_ingestao' in request.FILES:
             arquivo_recebido = request.FILES['arquivo_ingestao']
             nome = arquivo_recebido.name
 
-            # Pega a extensão (.pdf, .txt) e padroniza para os filtros funcionarem depois
+            # Extrai a extensão (.pdf, .png, etc) para os filtros do Front-End
             extensao = os.path.splitext(nome)[1].lower()
 
-            # Salva o registro no banco de dados SQLite e o arquivo na pasta /media/
+            # Salva no banco de dados vinculado ao projeto atual
             Arquivo.objects.create(
                 projeto=projeto,
                 documento=arquivo_recebido,
@@ -26,10 +48,10 @@ def dashboard(request):
                 tipo=extensao
             )
 
-            # Recarrega a página para evitar que o usuário envie o arquivo duas vezes sem querer
-            return redirect('dashboard')
+            # Redireciona de volta para o dashboard DESTE projeto específico
+            return redirect('dashboard', projeto_id=projeto.id)
 
-            # Busca os arquivos que já estão salvos no banco para mostrar na tela
+    # Busca apenas os arquivos que pertencem a este projeto
     arquivos_salvos = projeto.arquivos.all().order_by('-data_ingestao')
 
     contexto = {
@@ -37,5 +59,5 @@ def dashboard(request):
         'arquivos': arquivos_salvos,
     }
 
-    # Envia os dados para o Front-End
+    # Renderiza o dashboard.html (ajuste o caminho se estiver dentro de uma subpasta)
     return render(request, 'Projetos/dashboard.html', contexto)
