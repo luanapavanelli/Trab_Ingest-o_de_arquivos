@@ -61,3 +61,18 @@ def dashboard(request, projeto_id):
 
     # Renderiza o dashboard.html (ajuste o caminho se estiver dentro de uma subpasta)
     return render(request, 'Projetos/dashboard.html', contexto)
+
+def deletar_projeto(request, projeto_id):
+    """ Exclui um projeto inteiro e todos os arquivos atrelados a ele. """
+    if request.method == 'POST':
+        projeto = get_object_or_404(Projeto, id=projeto_id)
+        projeto.delete() # O on_delete=CASCADE no models já apaga os arquivos do banco junto
+    return redirect('home')
+
+def deletar_arquivo(request, arquivo_id):
+    """ Exclui um arquivo específico de dentro do projeto. """
+    if request.method == 'POST':
+        arquivo = get_object_or_404(Arquivo, id=arquivo_id)
+        projeto_id = arquivo.projeto.id
+        arquivo.delete()
+        return redirect('dashboard', projeto_id=projeto_id)

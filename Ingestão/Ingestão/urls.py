@@ -8,6 +8,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),  # Tela de menu principal
     path('projeto/<int:projeto_id>/', views.dashboard, name='dashboard'), # Tela de arquivos
+    # NOVAS ROTAS DE EXCLUSÃO:
+    path('projeto/<int:projeto_id>/deletar/', views.deletar_projeto, name='deletar_projeto'),
+    path('arquivo/<int:arquivo_id>/deletar/', views.deletar_arquivo, name='deletar_arquivo'),
 ]
 
 # Isso permite que os PDFs e arquivos abram no navegador depois do upload
