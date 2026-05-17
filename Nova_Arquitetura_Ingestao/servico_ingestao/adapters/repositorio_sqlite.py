@@ -113,3 +113,29 @@ class SQLiteArquivoRepository(IArquivoRepository):
             cursor.execute(query, (arquivo_id,))
             conn.commit()
             return cursor.rowcount > 0
+
+    def buscar_por_id(self, arquivo_id: int) -> Arquivo:
+        query = """
+                SELECT id, nome_original, projeto_id, tipo, tamanho_bytes, data_ingestao
+                FROM arquivos
+                WHERE id = ?
+                """
+        with self._conectar() as conn:
+            cursor = conn.cursor()
+            linha = cursor.execute(query, (arquivo_id,)).fetchone()
+
+            if not linha:
+                return None
+
+            # Criamos a entidade
+            arq = Arquivo(
+                nome_original=linha[1],
+                projeto_id=linha[2],
+                conteudo_binario=b""
+            )
+            arq.id = linha[0]
+            arq.tipo = linha[3]
+            arq.tamanho_bytes = linha[4]
+            arq.data_ingestao = linha[5]
+
+            return arq

@@ -19,6 +19,11 @@ class IArquivoRepository(ABC):
         pass
 
     @abstractmethod
+    def buscar_por_id(self, arquivo_id: int) -> Optional[Arquivo]:
+        """Busca os metadados de um ficheiro específico pelo seu ID."""
+        pass
+
+    @abstractmethod
     def deletar_metadados(self, arquivo_id: int) -> bool:
         pass
 

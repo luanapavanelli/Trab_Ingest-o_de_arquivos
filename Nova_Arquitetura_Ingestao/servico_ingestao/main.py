@@ -10,6 +10,7 @@ from use_cases.upload_arquivo import UploadArquivoUseCase, ListarArquivosUseCase
 from use_cases.download_arquivo import DownloadArquivoUseCase  # 2. ALTERAÇÃO: Importado o novo Caso de Uso
 from adapters.repositorio_sqlite import SQLiteArquivoRepository
 from adapters.storage_local import LocalStorageAdapter
+from use_cases.deletar_arquivo import DeletarArquivoUseCase
 
 # Configuração do Adaptador HTTP (FastAPI)
 app = FastAPI(title="Microsserviço de Ingestão e Armazenamento")
@@ -30,9 +31,8 @@ storage_disco = LocalStorageAdapter(diretorio_base="armazenamento_local")
 # Injetamos os adaptadores nos Casos de Uso
 upload_use_case = UploadArquivoUseCase(repositorio=repositorio_db, storage=storage_disco)
 listar_use_case = ListarArquivosUseCase(repositorio=repositorio_db)
-download_use_case = DownloadArquivoUseCase(
-    repositorio=repositorio_db)  # 3. ALTERAÇÃO: Instanciado o Caso de Uso de Download
-
+download_use_case = DownloadArquivoUseCase(repositorio=repositorio_db)
+deletar_use_case = DeletarArquivoUseCase(repositorio=repositorio_db, storage=storage_disco)
 
 # DTOs (Data Transfer Objects) para formatar a saída da API
 class ArquivoResponse(BaseModel):
@@ -93,3 +93,23 @@ def baixar_arquivo(projeto_id: int, arquivo_id: int):
     except FileNotFoundError as erro:
         # Se o registo existir no banco, mas o ficheiro físico tiver sido apagado do disco (Erro de Infraestrutura)
         raise HTTPException(status_code=404, detail=str(erro))
+
+
+@app.delete("/api/arquivos/{projeto_id}/{arquivo_id}")
+def deletar_arquivo(projeto_id: int, arquivo_id: int):
+    """
+    Remove o ficheiro físico do disco e apaga seus metadados do banco de dados.
+    """
+    try:
+        sucesso = deletar_use_case.executar(projeto_id=projeto_id, arquivo_id=arquivo_id)
+        if sucesso:
+            return {"mensagem": "Arquivo excluído com sucesso."}
+        else:
+            raise HTTPException(status_code=400, detail="Não foi possível concluir a exclusão do arquivo.")
+
+    except ValueError as erro:
+        # Cai aqui se o ficheiro não for encontrado no banco ou não pertencer ao projeto
+        raise HTTPException(status_code=404, detail=str(erro))
+    except Exception as erro:
+        # Cai aqui se houver um erro de permissão no disco (SO) ou erro no SQL
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(erro)}")
