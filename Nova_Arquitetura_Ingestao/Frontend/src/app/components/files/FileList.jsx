@@ -1,4 +1,3 @@
-import React from 'react';
 import { FileCard } from './FileCard';
 
 export const FileList = ({ files }) => {

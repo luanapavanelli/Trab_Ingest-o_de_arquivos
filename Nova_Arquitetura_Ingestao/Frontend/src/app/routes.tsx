@@ -1,4 +1,3 @@
-import React from 'react';
 import { createBrowserRouter, Outlet } from "react-router";
 import { Dashboard } from "./pages/Dashboard";
 import { Projects } from "./pages/Projects";

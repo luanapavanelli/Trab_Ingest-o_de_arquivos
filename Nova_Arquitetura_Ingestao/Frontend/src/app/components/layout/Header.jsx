@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const Header = ({ currentProject }) => {
   return (
     <header className="h-16 border-b border-neutral-800 bg-neutral-900 flex items-center px-8">

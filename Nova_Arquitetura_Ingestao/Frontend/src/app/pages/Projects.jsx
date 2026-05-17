@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Plus, Folder, Edit2, Trash2, X, Loader2 } from 'lucide-react';
 import { getProjetos, createProjeto, updateProjeto, deleteProjeto } from '../services/api_gestao';

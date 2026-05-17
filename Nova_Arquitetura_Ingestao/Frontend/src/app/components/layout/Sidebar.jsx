@@ -1,4 +1,3 @@
-import React from 'react';
 import { Filter, FileText, File, FileCode, LayoutGrid, ArrowLeft } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';

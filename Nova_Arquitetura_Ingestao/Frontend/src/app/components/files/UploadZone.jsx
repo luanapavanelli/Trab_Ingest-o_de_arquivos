@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { UploadCloud, Loader2 } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 

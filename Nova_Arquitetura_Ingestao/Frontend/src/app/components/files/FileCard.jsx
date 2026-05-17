@@ -1,4 +1,3 @@
-import React from 'react';
 import { FileText, File, FileCode, Download, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDownloadUrl } from '../../services/api_ingestao';
