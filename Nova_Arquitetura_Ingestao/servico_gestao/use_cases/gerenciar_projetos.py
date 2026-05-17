@@ -1,6 +1,7 @@
 from typing import List, Optional
 from domain.entidades import Projeto
 from ports.repositorio import IProjetoRepository
+from datetime import datetime
 
 
 class GerenciarProjetosUseCase:
@@ -46,12 +47,24 @@ class GerenciarProjetosUseCase:
     def listar_projetos(self) -> List[Projeto]:
         return self.repositorio.listar_todos()
 
-    def atualizar_descricao_projeto(self, projeto_id: int, nova_descricao: str) -> Projeto:
+    def editar_projeto(self, projeto_id: int, nome: str, descricao: str = None) -> Projeto:
+        """
+        Regra de aplicação para edição completa dos dados de um projeto.
+        """
+        # 1. Recupera o estado atual do projeto
         projeto = self.repositorio.buscar_por_id(projeto_id)
         if not projeto:
             raise ValueError(f"Projeto com o ID {projeto_id} não foi encontrado.")
 
-        projeto.atualizar_descricao(nova_descricao)
+        # 2. Modifica os atributos com os novos dados passados pelo usuário
+        projeto.nome = nome
+        projeto.descricao = descricao
+        projeto.ultima_alteracao = datetime.now()
+
+        # 3. Força o Domínio a validar se as novas alterações são permitidas
+        projeto.validar()
+
+        # 4. Grava no banco usando o método salvar (que fará o UPDATE devido ao ID)
         return self.repositorio.salvar(projeto)
 
     def deletar_projeto(self, projeto_id: int) -> bool:

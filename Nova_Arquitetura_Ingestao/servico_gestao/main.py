@@ -79,3 +79,20 @@ def deletar_projeto(projeto_id: int):
         raise HTTPException(status_code=404, detail=str(erro))
     except Exception as erro:
         raise HTTPException(status_code=500, detail=f"Erro interno de infraestrutura: {str(erro)}")
+
+@app.put("/api/projetos/{projeto_id}", response_model=ProjetoResponse)
+def editar_projeto(projeto_id: int, projeto_in: ProjetoCreate):
+    """
+    Porta de entrada HTTP para modificação dos dados cadastrais do projeto.
+    """
+    try:
+        projeto_editado = use_case.editar_projeto(
+            projeto_id=projeto_id,
+            nome=projeto_in.nome,
+            descricao=projeto_in.descricao
+        )
+        return projeto_editado
+    except ValueError as erro:
+        raise HTTPException(status_code=400, detail=str(erro))
+    except Exception as erro:
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(erro)}")
